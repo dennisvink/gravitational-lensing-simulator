@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Light Trajectory Visualization</title>
+    <style>
+        #canvas {
+            border: 1px solid black;
+            width: 600px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Mass of Object (in kg)</h1>
+    <input type="number" value='5974000000000000000000000000000000' id="mass" placeholder="Mass">
+    <button onclick="calculate()">Calculate Trajectory</button>
+    
+    <canvas id="canvas" width="600" height="300"></canvas>
+
+    <script>
+        function calculate() {
+            var mass = document.getElementById('mass').value;
+            
+            fetch('/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({mass: mass}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error) {
+                    alert(data.error);
+                } else {
+                    visualize(data.trajectory);
+                }
+            });
+        }
+
+        function visualize(trajectory) {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+
+            trajectory.forEach(point => {
+                var x = point[0] / 1e9 * canvas.width;
+                var y = canvas.height / 2 - point[1] / 1e9 * canvas.height;
+                ctx.lineTo(x, y);
+            });
+
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>
